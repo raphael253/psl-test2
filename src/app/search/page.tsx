@@ -63,9 +63,7 @@ async function Results({ q, speaker, from, to, assertion, source_type }: SearchP
   }
 
   if (source_type) {
-    // filter by joined source field -> use RPC-style filter on relationship
-    // Supabase allows filtering on foreign columns via dot notation if selected; here we use the source relationship
-    query = query.eq('source->>source_type', source_type)
+    query = query.eq('source.source_type', source_type)
   }
 
   const { data: statements, error } = await query
@@ -119,7 +117,7 @@ async function SpeakerOptions() {
 
 export default async function SearchPage({ searchParams }: PageProps) {
   const params = await searchParams
-  const { q, speaker, from, to } = params
+  const { q, speaker, from, to, assertion, source_type } = params
   const speakers = await SpeakerOptions()
 
   return (
@@ -145,9 +143,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
         {/* Résultats */}
         <div className="min-w-0 flex-1">
-          {q || speaker || from || to ? (
+          {q || speaker || from || to || assertion || source_type ? (
             <Suspense fallback={<p className="text-sm text-slate-400">Recherche…</p>}>
-              <Results q={q} speaker={speaker} from={from} to={to} />
+              <Results q={q} speaker={speaker} from={from} to={to} assertion={assertion} source_type={source_type} />
             </Suspense>
           ) : (
             <div className="py-12 text-center text-slate-400 text-sm">
