@@ -62,10 +62,6 @@ async function Results({ q, speaker, from, to, assertion, source_type }: SearchP
     query = query.eq('assertion_type', assertion)
   }
 
-  if (source_type) {
-    query = query.eq('source.source_type', source_type)
-  }
-
   const { data: statements, error } = await query
 
   if (error) {
@@ -77,7 +73,14 @@ async function Results({ q, speaker, from, to, assertion, source_type }: SearchP
     )
   }
 
-  if (!statements?.length) {
+  let filtered = statements ?? []
+
+  if (source_type && filtered.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    filtered = filtered.filter((s: any) => s.source?.source_type === source_type)
+  }
+
+  if (!filtered.length) {
     return (
       <div className="py-12 text-center">
         <p className="text-slate-500">Aucun résultat pour cette recherche.</p>
@@ -91,11 +94,11 @@ async function Results({ q, speaker, from, to, assertion, source_type }: SearchP
   return (
     <div>
       <p className="mb-4 text-sm text-slate-500">
-        {statements.length} résultat{statements.length > 1 ? 's' : ''}
+        {filtered.length} résultat{filtered.length > 1 ? 's' : ''}
         {q && <> pour &ldquo;<span className="font-medium text-slate-700">{q}</span>&rdquo;</>}
       </p>
       <div className="space-y-3">
-        {statements.map((s) => (
+        {filtered.map((s) => (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <StatementCard key={s.id} statement={s as any} />
         ))}
